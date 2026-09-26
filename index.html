@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Slice Quest: Free Voxel Adventure Game</title>
-<meta name="description" content="Slice through the tiles, dodge the enemies and reveal the hidden picture. 10 heroes, 20 levels, Daily Challenge and Kids mode. Free, no download.">
+<meta name="description" content="Slice through the tiles, dodge the enemies and reveal the hidden picture. Two games in one: 3D and 2D, 40 levels, 10 heroes, Daily Challenge and Kids mode. Free, no download.">
 <meta name="theme-color" content="#0b0a2e">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Slice Quest: free voxel adventure">
@@ -112,8 +112,10 @@
   .scroll-hint svg { width: 34px; height: 34px; }
   @keyframes hint { 0%, 100% { transform: translate(-50%, 0); opacity: .6; } 50% { transform: translate(-50%, 8px); opacity: 1; } }
 
+  .hero-bg.alt { background-image: url(img/bg2d_wide.jpg); background-position: center; }
   @media (max-aspect-ratio: 4/5) {
     .hero-bg { background-image: url(img/bg_tall.jpg); background-position: center 72%; }
+    .hero-bg.alt { background-image: url(img/bg2d_tall.jpg); background-position: center; }
     .hero-shade { background: linear-gradient(to bottom, rgba(11,10,46,.55) 0%, rgba(11,10,46,0) 34%),
                               linear-gradient(to top, var(--night) 0%, rgba(11,10,46,.85) 18%, rgba(11,10,46,0) 42%); }
     .hero-content { width: 100%; margin: 0; justify-content: flex-start; padding: 40px 16px 48px; gap: 10px; }
@@ -147,6 +149,49 @@
   .parade::after { right: 0; background: linear-gradient(-90deg, var(--night), transparent); }
 
   .tilt { transform-style: preserve-3d; will-change: transform; }
+
+  /* ---------- 3D | 2D switch ---------- */
+  .mode-pill { position: relative; display: grid; grid-template-columns: 1fr 1fr; width: 230px; padding: 4px; border-radius: 999px;
+               background: rgba(11, 10, 46, .75); border: 2px solid var(--line); backdrop-filter: blur(8px); box-shadow: 0 5px 0 rgba(4,4,24,.7); }
+  .mode-pill button { position: relative; z-index: 1; border: 0; background: none; cursor: pointer; font-family: var(--display); font-size: 22px;
+                      letter-spacing: .06em; color: rgba(255,255,255,.75); padding: 6px 0 8px; transition: color .2s; }
+  .mode-pill button[aria-pressed="true"] { color: #3a1d00; }
+  .mode-pill i { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); border-radius: 999px;
+                 background: linear-gradient(#ffe680, #ffc21a 60%, #e89a00); box-shadow: inset 0 2px 0 rgba(255,255,255,.6), 0 3px 0 #9a5a00;
+                 transition: transform .3s cubic-bezier(.3,1.4,.5,1); }
+  .mode-pill.is-2d i { transform: translateX(100%); }
+  .mode-pill button:focus-visible { outline: 3px solid var(--sky); outline-offset: 2px; border-radius: 999px; }
+  .hero-bg.alt { opacity: 0; transition: opacity .7s ease, transform .6s cubic-bezier(.2,.7,.3,1); }
+  body.m2d .hero-bg.alt { opacity: 1; }
+
+  /* ---------- Two games in one ---------- */
+  .modes { background: radial-gradient(ellipse at 70% 10%, #2a1d78 0%, var(--night) 62%); }
+  .modes-grid { display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); gap: clamp(28px, 6vw, 80px); align-items: center; margin-top: 40px; }
+  @media (max-width: 820px) { .modes-grid { grid-template-columns: 1fr; justify-items: center; } }
+  .phone { position: relative; width: min(320px, 78vw); aspect-ratio: 390 / 844; border-radius: 44px; padding: 12px; background: linear-gradient(145deg, #3a3470, #15123e);
+           box-shadow: 0 0 0 2px rgba(160,150,255,.35), 0 40px 80px rgba(0,0,0,.55), inset 0 0 0 2px rgba(255,255,255,.08); }
+  .phone::before { content: ""; position: absolute; top: 20px; left: 50%; width: 30%; height: 20px; transform: translateX(-50%); border-radius: 99px; background: #0a0922; z-index: 2; }
+  .phone .screen { position: relative; width: 100%; height: 100%; border-radius: 34px; overflow: hidden; background: #0b0a2e; }
+  .phone video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: opacity .45s ease; }
+  .phone video.off { opacity: 0; }
+  .phone .tag { position: absolute; top: 44px; left: 50%; transform: translateX(-50%); z-index: 2; font-family: var(--display); font-size: 16px; letter-spacing: .08em;
+                padding: 3px 12px; border-radius: 99px; background: rgba(11,10,46,.75); border: 2px solid var(--gold); color: var(--gold); }
+  .mode-copy .mode-pill { margin: 22px 0 18px; }
+  .mode-card { display: none; }
+  .mode-card.on { display: block; animation: fadeUp .45s ease both; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  .mode-card h3 { font-family: var(--display); font-weight: normal; font-size: clamp(26px, 3vw, 34px); line-height: 1.1; }
+  .mode-card h3 em { font-style: normal; color: var(--gold); }
+  .mode-card ul { list-style: none; display: grid; gap: 10px; margin-top: 14px; }
+  .mode-card li { display: flex; gap: 12px; align-items: center; color: #dcdaff; }
+  .mode-card li img { width: 40px; height: 40px; object-fit: contain; flex: none; }
+  .arenas { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+  .arena { width: 84px; text-align: center; font-family: var(--display); font-size: 14px; letter-spacing: .03em; color: var(--muted); }
+  .arena img { width: 84px; height: 84px; border-radius: 16px; border: 2px solid var(--line); background: #0d5fb8; transition: transform .25s; image-rendering: auto; }
+  .arena:hover img { transform: translateY(-4px) rotate(-3deg); border-color: var(--gold); }
+  .new-badge { position: absolute; top: 10px; right: 10px; font-family: var(--display); font-size: 13px; letter-spacing: .08em; color: #3a1d00;
+               background: var(--gold); border-radius: 99px; padding: 2px 9px; transform: rotate(6deg); box-shadow: 0 3px 0 #9a5a00; }
+  .foe { position: relative; }
 
   /* ---------- Mini-game ---------- */
   .play { background: radial-gradient(ellipse at 30% 0%, #241a6e 0%, var(--night) 60%); }
@@ -222,7 +267,7 @@
   .card:focus-visible, .btn:focus-visible, .pic:focus-visible { outline: 3px solid var(--sky); outline-offset: 3px; }
 
   /* ---------- Enemies ---------- */
-  .foes { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; margin-top: 40px; }
+  .foes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 40px; }
   @media (max-width: 880px) { .foes { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); } }
   .foe { background: linear-gradient(#2a1236, #180c2a); border: 3px solid rgba(255, 90, 74, .3); border-radius: 22px; padding: 18px 14px 18px; text-align: center; transition: transform .2s, border-color .2s; }
   .foe img { height: 120px; width: auto; margin: 0 auto 10px; object-fit: contain; filter: drop-shadow(0 10px 10px rgba(0,0,0,.5)); transition: transform .3s; }
@@ -288,13 +333,14 @@
 
 <header class="topbar" id="topbar">
   <a href="#top" aria-label="Slice Quest, back to top"><img src="img/logo.webp" alt="Slice Quest"></a>
-  <nav><a href="#try">Try it</a><a href="#heroes">Heroes</a><a href="#features">Features</a><a href="#share">Share</a></nav>
+  <nav><a href="#modes">3D / 2D</a><a href="#try">How it works</a><a href="#heroes">Heroes</a><a href="#features">Features</a><a href="#share">Share</a></nav>
   <a class="btn btn-play btn-small" href="https://slice-quest.netlify.app/" target="_blank" rel="noopener">PLAY FREE</a>
 </header>
 
 <!-- HERO -->
 <section class="hero" id="top">
   <div class="hero-bg" id="heroBg"></div>
+  <div class="hero-bg alt" id="heroBg2d"></div>
   <div class="hero-shade"></div>
   <canvas id="sky"></canvas>
   <div class="floaters" id="floaters" aria-hidden="true">
@@ -309,6 +355,7 @@
   <div class="hero-content">
     <img class="hero-logo" src="img/logo.webp" alt="Slice Quest" width="1000" height="603">
     <div class="tagline">Reveal · Avoid · Survive · <b>Collect!</b></div>
+    <div class="mode-pill" id="heroMode" role="group" aria-label="Pick a game"><button data-m="3d" aria-pressed="true">3D</button><button data-m="2d" aria-pressed="false">2D</button><i aria-hidden="true"></i></div>
     <div class="hero-actions">
       <a class="btn btn-play" href="https://slice-quest.netlify.app/" target="_blank" rel="noopener"><span class="shine"></span>PLAY NOW</a>
       <a class="btn btn-ghost" href="#try">See how it works</a>
@@ -319,6 +366,45 @@
 </section>
 
 <div class="parade" aria-hidden="true"><div class="parade-track" id="parade"></div></div>
+
+<!-- TWO GAMES IN ONE -->
+<section class="modes" id="modes">
+  <div class="wrap">
+    <div class="center reveal">
+      <div class="kicker">New in 0.4</div>
+      <h2>Two games <em>in one</em></h2>
+      <p class="lead">Play the island in full 3D, or switch to 2D: a classic top-down arcade with its own 20 arenas and its own progress. Coins and heroes count in both.</p>
+    </div>
+    <div class="modes-grid">
+      <div class="phone reveal"><div class="screen">
+        <video id="vid3d" src="img/modes/3d.mp4" poster="img/modes/3d.jpg" muted loop playsinline autoplay preload="metadata"></video>
+        <video id="vid2d" class="off" src="img/modes/2d.mp4" poster="img/modes/2d.jpg" muted loop playsinline preload="metadata"></video>
+        <div class="tag" id="phoneTag">3D MODE</div>
+      </div></div>
+      <div class="mode-copy reveal">
+        <div class="mode-pill" id="modePill" role="group" aria-label="Pick a game"><button data-m="3d" aria-pressed="true">3D</button><button data-m="2d" aria-pressed="false">2D</button><i aria-hidden="true"></i></div>
+        <div class="mode-card on" data-card="3d">
+          <h3>The island in <em>3D</em></h3>
+          <ul>
+            <li><img src="img/items/shield.webp" alt="">Towers, torches, waves and palm trees all around the arena</li>
+            <li><img src="img/items/bolt.webp" alt="">Turn and tilt the camera, or follow your hero up close</li>
+            <li><img src="img/items/coin.webp" alt="">20 levels on Tropical Isle, each hiding a picture</li>
+          </ul>
+        </div>
+        <div class="mode-card" data-card="2d">
+          <h3>Classic <em>2D</em> arcade</h3>
+          <ul>
+            <li><img src="img/items/mystery.webp" alt="">Seen from above, the same heroes, enemies and power-ups</li>
+            <li><img src="img/items/heart.webp" alt="">20 new arenas: a heart, an hourglass, twin rooms and more</li>
+            <li><img src="img/items/sticker.webp" alt="">Its own level map and stars, a whole second game</li>
+          </ul>
+          <div class="arenas" id="arenas"></div>
+        </div>
+        <a class="btn btn-play btn-small" id="modePlay" href="https://slice-quest.netlify.app/?track=3d" target="_blank" rel="noopener" style="margin-top:22px">PLAY 3D</a>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- MINI GAME -->
 <section class="play" id="try">
@@ -379,7 +465,7 @@
     <div class="center reveal">
       <div class="kicker">Watch out</div>
       <h2>They <em>will</em> chase you</h2>
-      <p class="lead">Five kinds of enemies guard the island. Each one needs its own plan.</p>
+      <p class="lead">Six kinds of enemies guard the island, from the bouncy sea urchin to the laser tank.</p>
     </div>
     <div class="foes reveal" id="foes"></div>
   </div>
@@ -460,6 +546,7 @@
     { id: 'chef', name: 'Chef', special: 'Hearty Meal', weapon: 'Frying Pan', text: 'Eat up: +1 heart', color: '#ff6a8a' },
   ];
   const FOES = [
+    { id: 'urchin', name: 'Sea Urchin', text: 'Bounces from side to side. The first thing you meet!', isNew: true },
     { id: 'chaser', name: 'Chaser', text: 'Hunts the front of your trail' },
     { id: 'shooter', name: 'Shooter', text: 'Shows "!" then fires at you' },
     { id: 'bomber', name: 'Bomber', text: 'Plants skull bombs. Keep your line out of the red ring!' },
@@ -545,7 +632,7 @@
   pickHero('hero');
 
   // ---------------- Enemies ----------------
-  $('#foes').innerHTML = FOES.map((f) => `<div class="foe"><img src="img/enemies/${f.id}.webp" alt="" loading="lazy"><b>${f.name}</b><span>${f.text}</span></div>`).join('');
+  $('#foes').innerHTML = FOES.map((f) => `<div class="foe">${f.isNew ? '<span class="new-badge">NEW</span>' : ''}<img src="img/enemies/${f.id}.webp" alt="" loading="lazy"><b>${f.name}</b><span>${f.text}</span></div>`).join('');
   const foeImgs = Object.fromEntries(FOES.map((f) => [f.id, img(`img/enemies/${f.id}.webp`)]));
 
   // ---------------- Gallery (tap to peek) ----------------
@@ -558,6 +645,37 @@
     b.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') b.classList.remove('open'); });
     gal.append(b);
   });
+
+  // ---------------- 3D | 2D ----------------
+  const ARENAS = [['heart', 'Heart'], ['hourglass', 'Hourglass'], ['twin', 'Twin rooms'], ['pillars', 'Pillars'], ['zigzag', 'Zigzag']];
+  $('#arenas').innerHTML = ARENAS.map(([id, n]) => `<div class="arena"><img src="img/arenas/${id}.webp" alt="" loading="lazy"><div>${n}</div></div>`).join('');
+  let mode = '3d';
+  let pickedMode = false;
+  function setMode(m) {
+    mode = m;
+    document.body.classList.toggle('m2d', m === '2d');
+    document.querySelectorAll('.mode-pill').forEach((p) => {
+      p.classList.toggle('is-2d', m === '2d');
+      p.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.m === m)));
+    });
+    document.querySelectorAll('.mode-card').forEach((c) => c.classList.toggle('on', c.dataset.card === m));
+    const on = $(m === '2d' ? '#vid2d' : '#vid3d');
+    const off = $(m === '2d' ? '#vid3d' : '#vid2d');
+    on.classList.remove('off');
+    off.classList.add('off');
+    on.currentTime = 0;
+    on.play().catch(() => {});
+    off.pause();
+    $('#phoneTag').textContent = `${m.toUpperCase()} MODE`;
+    $('#modePlay').textContent = `PLAY ${m.toUpperCase()}`;
+    // Every Play button opens the game in the world picked here.
+    document.querySelectorAll('a.btn-play').forEach((a) => (a.href = `${GAME_URL}?track=${m}`));
+  }
+  document.querySelectorAll('.mode-pill button').forEach((b) => b.addEventListener('click', () => { pickedMode = true; setMode(b.dataset.m); }));
+  // Until someone picks, the phone swaps between the two games by itself.
+  const modesIO = new IntersectionObserver(([e]) => { modesIO.visible = e.isIntersecting; }, { threshold: 0.3 });
+  modesIO.observe($('#modes'));
+  setInterval(() => { if (!pickedMode && modesIO.visible && !reduced) setMode(mode === '3d' ? '2d' : '3d'); }, 9000);
 
   // ---------------- Share ----------------
   const toast = (msg) => { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('show'), 2200); };
@@ -633,7 +751,7 @@
     for (let i = 0; i < N; i++) { grid[idx(i, 0)] = grid[idx(i, N - 1)] = grid[idx(0, i)] = grid[idx(N - 1, i)] = 1; }
     total = (N - 2) * (N - 2); done = 0; trail = []; plan = null;
     player = { x: Math.floor(N / 2), y: N - 1, rx: Math.floor(N / 2), ry: N - 1, face: 1 }; safeCell = { x: player.x, y: player.y };
-    const kinds = ['chaser', 'speedy', 'bomber', 'shooter', 'tank'];
+    const kinds = ['urchin', 'urchin', 'urchin', 'speedy', 'urchin'];
     enemies = [0, 1].map((i) => {
       const a = Math.PI / 4 + i * Math.PI / 2 + (Math.random() - 0.5) * 0.4, sp = 5.5 + Math.random() * 1.5;
       return { x: N * (0.3 + 0.4 * Math.random()), y: N * (0.25 + 0.3 * Math.random()), vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, kind: kinds[(picIdx + i * 2) % kinds.length], t: Math.random() * 6 };
