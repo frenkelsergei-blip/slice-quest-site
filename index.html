@@ -1,0 +1,846 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Slice Quest: Free Voxel Adventure Game</title>
+<meta name="description" content="Slice through the tiles, dodge the enemies and reveal the hidden picture. 10 heroes, 20 levels, Daily Challenge and Kids mode. Free, no download.">
+<meta name="theme-color" content="#0b0a2e">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Slice Quest: free voxel adventure">
+<meta property="og:description" content="Slice through the tiles, dodge the enemies and reveal the hidden picture. Play free in your browser.">
+<meta property="og:image" content="https://frenkelsergei-blip.github.io/slice-quest-site/img/og.jpg">
+<meta property="og:url" content="https://frenkelsergei-blip.github.io/slice-quest-site/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.png">
+<link rel="apple-touch-icon" href="img/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="img/bg_wide.jpg" media="(min-aspect-ratio: 4/5)">
+<link rel="preload" as="image" href="img/bg_tall.jpg" media="(max-aspect-ratio: 4/5)">
+<style>
+  :root {
+    --night: #0b0a2e;
+    --deep: #151047;
+    --panel: rgba(30, 24, 92, .72);
+    --panel-solid: #1c1660;
+    --line: rgba(160, 150, 255, .28);
+    --gold: #ffd23f;
+    --sky: #7fd0ff;
+    --text: #f4f2ff;
+    --muted: #b9b6e6;
+    --green-1: #8ef04c; --green-2: #45c21e; --green-3: #2f9e12; --green-edge: #1d5c0b;
+    --display: 'Lilita One', system-ui, sans-serif;
+    --body: 'Nunito', system-ui, sans-serif;
+    --r: 22px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--night); color: var(--text); font-family: var(--body); font-weight: 600;
+         line-height: 1.5; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+  img { display: block; max-width: 100%; }
+  a { color: inherit; }
+  h2 { font-family: var(--display); font-weight: normal; font-size: clamp(34px, 5vw, 56px); line-height: 1.05;
+       letter-spacing: .01em; text-shadow: 0 4px 0 #2a1760; }
+  h2 em { font-style: normal; color: var(--gold); }
+  .kicker { font-family: var(--display); color: var(--sky); letter-spacing: .08em; text-transform: uppercase; font-size: 16px; margin-bottom: 8px; }
+  .lead { color: var(--muted); font-size: clamp(16px, 1.6vw, 19px); max-width: 560px; margin-top: 12px; }
+  section { position: relative; padding: clamp(64px, 9vw, 120px) 16px; }
+  .wrap { max-width: 1160px; margin: 0 auto; }
+  .center { text-align: center; }
+  .center .lead { margin-left: auto; margin-right: auto; }
+
+  /* ---------- Buttons ---------- */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; cursor: pointer;
+         font-family: var(--display); letter-spacing: .04em; border: 0; color: #fff; user-select: none;
+         transition: transform .15s ease, filter .15s ease; }
+  .btn:active { transform: translateY(4px) scale(.98); }
+  .btn-play { position: relative; font-size: clamp(30px, 4.4vw, 46px); padding: 14px 44px 18px; border-radius: 26px;
+              background: linear-gradient(var(--green-1) 0%, var(--green-2) 55%, var(--green-3) 100%);
+              border: 5px solid var(--green-edge); text-shadow: 0 4px 0 var(--green-edge);
+              box-shadow: 0 9px 0 var(--green-edge), 0 18px 40px rgba(0,0,0,.5), inset 0 5px 0 rgba(255,255,255,.4); }
+  .btn-play::after { content: ""; position: absolute; left: 7%; right: 7%; top: 9%; height: 28%; border-radius: 99px; background: rgba(255,255,255,.22); pointer-events: none; }
+  .btn-play:hover { filter: brightness(1.08); transform: translateY(-2px); }
+  .btn-play .shine { position: absolute; inset: 0; border-radius: 20px; overflow: hidden; pointer-events: none; }
+  .btn-play .shine::before { content: ""; position: absolute; top: -20%; bottom: -20%; width: 30%; left: -40%;
+              background: linear-gradient(100deg, transparent, rgba(255,255,255,.55), transparent); transform: skewX(-18deg);
+              animation: shine 3.6s ease-in-out infinite; }
+  @keyframes shine { 0%, 60% { left: -40%; } 85%, 100% { left: 120%; } }
+  .btn-ghost { font-size: 20px; padding: 12px 24px; border-radius: 18px; background: rgba(28, 22, 88, .7);
+               border: 3px solid var(--line); backdrop-filter: blur(6px); }
+  .btn-ghost:hover { border-color: var(--sky); }
+  .btn-small { font-size: 18px; padding: 8px 18px 10px; border-radius: 14px; border-width: 3px;
+               box-shadow: 0 5px 0 var(--green-edge), inset 0 3px 0 rgba(255,255,255,.4); text-shadow: 0 2px 0 var(--green-edge); }
+  .btn-small::after { display: none; }
+  .btn svg { width: 1em; height: 1em; }
+
+  /* ---------- Top bar ---------- */
+  .topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 16px; padding-top: max(10px, env(safe-area-inset-top)); background: rgba(11, 10, 46, .82); backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--line); transform: translateY(-110%); transition: transform .3s ease; }
+  .topbar.show { transform: none; }
+  .topbar img { height: 40px; width: auto; }
+  .topbar nav { display: flex; gap: 22px; font-family: var(--display); font-size: 17px; letter-spacing: .03em; }
+  .topbar nav a { text-decoration: none; color: var(--muted); }
+  .topbar nav a:hover { color: #fff; }
+  @media (max-width: 760px) { .topbar nav { display: none; } }
+
+  /* ---------- Hero ---------- */
+  .hero { min-height: 100vh; min-height: 100svh; padding: 0; display: flex; overflow: hidden; }
+  .hero-bg { position: absolute; inset: -30px; background: url(img/bg_wide.jpg) center 60% / cover no-repeat;
+             will-change: transform; transition: transform .6s cubic-bezier(.2,.7,.3,1); }
+  .hero-shade { position: absolute; inset: 0; pointer-events: none;
+             background: linear-gradient(to left, rgba(11,10,46,.88) 0%, rgba(11,10,46,.55) 30%, rgba(11,10,46,0) 55%),
+                         linear-gradient(to top, var(--night) 0%, rgba(11,10,46,0) 22%); }
+  #sky { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .hero-content { position: relative; margin-left: auto; width: min(640px, 48vw); display: flex; flex-direction: column; align-items: center;
+                  justify-content: center; text-align: center; padding: 60px 48px 90px 16px; gap: 22px; }
+  .hero-logo { width: auto; max-width: min(560px, 100%); max-height: 42vh; max-height: 42svh; filter: drop-shadow(0 18px 30px rgba(10,6,40,.75)); animation: bob 4s ease-in-out infinite; }
+  @keyframes bob { 0%, 100% { transform: rotate(-3deg) translateY(0); } 50% { transform: rotate(-2deg) translateY(-10px); } }
+  .tagline { font-family: var(--display); font-size: clamp(22px, 2.6vw, 34px); letter-spacing: .02em; text-shadow: 0 3px 0 #2a1760, 0 0 20px rgba(20,10,60,.9); }
+  .tagline b { font-weight: normal; color: var(--gold); }
+  .hero-sub .free-word { display: none; color: var(--gold); }
+  .hero-sub { color: #d9d7ff; font-size: 16px; text-shadow: 0 2px 8px rgba(0,0,0,.8); }
+  .hero-actions { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+  .free-badge { position: absolute; top: 28px; right: 28px; font-family: var(--display); color: #5a2a00; text-align: center; line-height: 1;
+                background: linear-gradient(#ffe066, #ffb400); border: 5px solid #6b3410; border-radius: 18px; padding: 10px 16px;
+                box-shadow: 0 7px 0 #3d1c05, 0 14px 30px rgba(0,0,0,.45); transform: rotate(8deg); font-size: 30px; animation: wiggle 5s ease-in-out infinite; }
+  .free-badge small { display: block; font-size: 18px; }
+  @keyframes wiggle { 0%, 90%, 100% { transform: rotate(8deg); } 93% { transform: rotate(14deg) scale(1.06); } 96% { transform: rotate(3deg); } }
+  .scroll-hint { position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%); color: var(--muted); animation: hint 2s ease-in-out infinite; }
+  .scroll-hint svg { width: 34px; height: 34px; }
+  @keyframes hint { 0%, 100% { transform: translate(-50%, 0); opacity: .6; } 50% { transform: translate(-50%, 8px); opacity: 1; } }
+
+  @media (max-aspect-ratio: 4/5) {
+    .hero-bg { background-image: url(img/bg_tall.jpg); background-position: center 72%; }
+    .hero-shade { background: linear-gradient(to bottom, rgba(11,10,46,.55) 0%, rgba(11,10,46,0) 34%),
+                              linear-gradient(to top, var(--night) 0%, rgba(11,10,46,.85) 18%, rgba(11,10,46,0) 42%); }
+    .hero-content { width: 100%; margin: 0; justify-content: flex-start; padding: 40px 16px 48px; gap: 10px; }
+    .hero-logo { max-width: min(460px, 86vw); max-height: 30svh; }
+    .hero-actions { margin-top: auto; }
+    .free-badge { display: none; }
+    .hero-sub .free-word { display: inline; }
+    .scroll-hint { display: none; }
+  }
+
+  /* Floating pickups over the hero art (parallax depth in data-depth). */
+  .floaters { position: absolute; inset: 0; pointer-events: none; }
+  .floaters img { position: absolute; width: var(--s); filter: drop-shadow(0 10px 14px rgba(0,0,0,.45)); transition: transform .5s cubic-bezier(.2,.7,.3,1); }
+  .fl { animation: float var(--d, 5s) ease-in-out infinite; animation-delay: var(--dl, 0s); }
+  @keyframes float { 0%, 100% { translate: 0 0; rotate: -6deg; } 50% { translate: 0 -18px; rotate: 6deg; } }
+  @media (max-aspect-ratio: 4/5) { .floaters .hide-tall { display: none; } }
+
+  /* Hero parade: an endless line of heroes and enemies hopping by. */
+  .parade { position: relative; overflow: hidden; padding: 18px 0 8px; background: linear-gradient(90deg, var(--night), #1a1356 50%, var(--night));
+            border-top: 2px solid var(--line); border-bottom: 2px solid var(--line); }
+  .parade-track { display: flex; gap: 26px; width: max-content; animation: march 40s linear infinite; }
+  .parade:hover .parade-track { animation-play-state: paused; }
+  .parade-track img { height: 104px; width: auto; animation: hop .7s ease-in-out infinite alternate; }
+  .parade-track img:nth-child(3n) { animation-delay: -.25s; }
+  .parade-track img:nth-child(3n+1) { animation-delay: -.5s; }
+  .parade-track img.foe-mini { height: 86px; align-self: flex-end; }
+  @keyframes march { to { transform: translateX(-50%); } }
+  @keyframes hop { from { transform: translateY(0) rotate(-3deg); } to { transform: translateY(-10px) rotate(3deg); } }
+  .parade::before, .parade::after { content: ""; position: absolute; top: 0; bottom: 0; width: 80px; z-index: 1; pointer-events: none; }
+  .parade::before { left: 0; background: linear-gradient(90deg, var(--night), transparent); }
+  .parade::after { right: 0; background: linear-gradient(-90deg, var(--night), transparent); }
+
+  .tilt { transform-style: preserve-3d; will-change: transform; }
+
+  /* ---------- Mini-game ---------- */
+  .play { background: radial-gradient(ellipse at 30% 0%, #241a6e 0%, var(--night) 60%); }
+  .play-grid { display: grid; grid-template-columns: minmax(0, 560px) minmax(0, 1fr); gap: clamp(28px, 5vw, 64px); align-items: center; }
+  @media (max-width: 880px) {
+    .play-grid { grid-template-columns: 1fr; gap: 0; }
+    .play-copy { display: contents; }
+    .play-copy > * { order: 0; }
+    .game-card { order: 1; margin-top: 24px; }
+    .play-copy .howto, .play-copy .keys { order: 2; }
+  }
+  @media (hover: none) { .keys .kb { display: none; } }
+  .game-card { background: var(--panel); border: 3px solid var(--line); border-radius: 28px; padding: 14px; box-shadow: 0 30px 60px rgba(0,0,0,.4); }
+  .hud { display: flex; align-items: center; gap: 12px; padding: 4px 6px 12px; font-family: var(--display); }
+  .hud .pic-name { font-size: 20px; letter-spacing: .02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hud .bar { flex: 1; height: 16px; border-radius: 99px; background: rgba(0,0,0,.35); position: relative; overflow: hidden; min-width: 60px; }
+  .hud .bar i { position: absolute; inset: 0 auto 0 0; width: 0; background: linear-gradient(90deg, #ffb400, var(--gold)); border-radius: 99px; transition: width .25s ease; }
+  .hud .bar b { position: absolute; top: -3px; bottom: -3px; width: 3px; background: #fff; border-radius: 2px; box-shadow: 0 0 6px #fff; }
+  .hud .pct { font-size: 20px; min-width: 52px; text-align: right; color: var(--gold); }
+  .hud .pic-name { min-width: 0; max-width: 45%; }
+  .stage { position: relative; aspect-ratio: 1; border-radius: 18px; overflow: hidden; background: #1a1240; touch-action: none; user-select: none; -webkit-user-select: none; }
+  .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .stage.shake { animation: shake .35s ease; }
+  @keyframes shake { 20% { transform: translate(-8px, 4px); } 40% { transform: translate(7px, -5px); } 60% { transform: translate(-5px, 3px); } 80% { transform: translate(3px, -2px); } }
+  .banner { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(.3) rotate(-8deg); opacity: 0; pointer-events: none;
+            text-align: center; font-family: var(--display); padding: 14px 30px 18px; border-radius: 22px; white-space: nowrap;
+            background: linear-gradient(#ffe066, #ffb400); color: #5a2a00; border: 5px solid #6b3410; box-shadow: 0 8px 0 #3d1c05, 0 20px 40px rgba(0,0,0,.5);
+            transition: transform .45s cubic-bezier(.2,1.6,.4,1), opacity .3s ease; }
+  .banner small { display: block; font-size: 16px; letter-spacing: .08em; text-transform: uppercase; }
+  .banner span { font-size: clamp(28px, 4.5vw, 40px); line-height: 1.05; }
+  .banner.show { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(-3deg); }
+  .steer { position: absolute; right: 10px; bottom: 10px; font-family: var(--display); font-size: 15px; letter-spacing: .03em; padding: 5px 12px;
+           border-radius: 99px; background: rgba(11,10,46,.7); border: 2px solid var(--line); color: var(--muted); pointer-events: none; transition: opacity .3s; }
+  .steer.you { color: var(--gold); border-color: var(--gold); }
+  @keyframes bob2 { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+  .howto { list-style: none; display: grid; gap: 14px; margin-top: 26px; }
+  .howto li { display: grid; grid-template-columns: 56px 1fr; gap: 14px; align-items: center; background: var(--panel); border: 2px solid var(--line);
+              border-radius: 18px; padding: 10px 16px 10px 10px; }
+  .howto li img { width: 56px; height: 56px; object-fit: contain; }
+  .howto b { font-family: var(--display); font-weight: normal; font-size: 20px; display: block; letter-spacing: .02em; }
+  .howto span { color: var(--muted); font-size: 15px; }
+  .keys { color: var(--muted); font-size: 14px; margin-top: 16px; }
+  .keys kbd { font-family: var(--body); font-weight: 800; background: rgba(255,255,255,.1); border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 6px; padding: 0 7px; color: #fff; }
+
+  /* ---------- Heroes ---------- */
+  .heroes { background: linear-gradient(var(--night), #120d3e 50%, var(--night)); }
+  .roster { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: clamp(24px, 4vw, 48px); margin-top: 40px; align-items: center; }
+  @media (max-width: 880px) { .roster { grid-template-columns: 1fr; } }
+  .spotlight { position: relative; border-radius: 30px; padding: 26px; min-height: 420px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: center;
+               background: radial-gradient(circle at 30% 45%, color-mix(in srgb, var(--hc, #5ab8ff) 45%, transparent) 0%, transparent 60%), var(--panel);
+               border: 3px solid color-mix(in srgb, var(--hc, #5ab8ff) 55%, transparent); transition: border-color .3s, background .3s; overflow: hidden; }
+  @media (max-width: 520px) { .spotlight { grid-template-columns: 1fr; text-align: center; min-height: 0; } }
+  .spotlight .big { width: 100%; max-width: 300px; margin: 0 auto; filter: drop-shadow(0 20px 24px rgba(0,0,0,.5)); }
+  .spotlight .big.pop { animation: pop .45s cubic-bezier(.2,1.6,.4,1); }
+  @keyframes pop { from { transform: scale(.7) translateY(20px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .spotlight h3 { font-family: var(--display); font-weight: normal; font-size: clamp(34px, 4vw, 46px); line-height: 1; text-shadow: 0 3px 0 #2a1760; }
+  .spotlight .special { display: inline-block; margin: 12px 0 8px; font-family: var(--display); font-size: 20px; color: #fff; letter-spacing: .02em;
+                        padding: 4px 14px; border-radius: 99px; background: color-mix(in srgb, var(--hc, #5ab8ff) 40%, rgba(0,0,0,.35)); border: 2px solid var(--hc, #5ab8ff); }
+  .spotlight p { color: #dcdaff; }
+  .spotlight .weapon { color: var(--muted); font-size: 15px; margin-top: 10px; }
+  .spotlight .weapon b { color: #fff; }
+  .spotlight .try { margin-top: 16px; }
+  .cards { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+  @media (max-width: 520px) { .cards { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; } }
+  .card { position: relative; aspect-ratio: 3 / 3.6; border-radius: 18px; cursor: pointer; overflow: hidden; border: 3px solid var(--line);
+          background: linear-gradient(#2c2386, #1a1454); transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; padding: 0; }
+  .card img { position: absolute; inset: 4% 0 auto; width: 100%; transition: transform .25s ease; }
+  .card span { position: absolute; left: 0; right: 0; bottom: 0; padding: 18px 4px 6px; font-family: var(--display); font-size: clamp(12px, 1.4vw, 16px); color: #fff;
+               background: linear-gradient(transparent, rgba(11,10,46,.95) 55%); letter-spacing: .02em; }
+  .card:hover { transform: translateY(-4px); }
+  .card:hover img { transform: scale(1.06); }
+  .card[aria-pressed="true"] { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(255,210,63,.35), 0 12px 24px rgba(0,0,0,.4); }
+  .card:focus-visible, .btn:focus-visible, .pic:focus-visible { outline: 3px solid var(--sky); outline-offset: 3px; }
+
+  /* ---------- Enemies ---------- */
+  .foes { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; margin-top: 40px; }
+  @media (max-width: 880px) { .foes { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); } }
+  .foe { background: linear-gradient(#2a1236, #180c2a); border: 3px solid rgba(255, 90, 74, .3); border-radius: 22px; padding: 18px 14px 18px; text-align: center; transition: transform .2s, border-color .2s; }
+  .foe img { height: 120px; width: auto; margin: 0 auto 10px; object-fit: contain; filter: drop-shadow(0 10px 10px rgba(0,0,0,.5)); transition: transform .3s; }
+  .foe:hover { border-color: rgba(255, 90, 74, .8); transform: translateY(-4px); }
+  .foe:hover img { transform: scale(1.1) rotate(-4deg); animation: menace .4s ease-in-out infinite alternate; }
+  @keyframes menace { to { transform: scale(1.1) rotate(4deg); } }
+  .foe b { font-family: var(--display); font-weight: normal; font-size: 22px; display: block; color: #ff8a7a; letter-spacing: .02em; }
+  .foe span { color: var(--muted); font-size: 14px; }
+
+  /* ---------- Features ---------- */
+  .features { background: radial-gradient(ellipse at 70% 20%, #231a6a 0%, var(--night) 60%); }
+  .feat-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 40px; }
+  @media (max-width: 880px) { .feat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 520px) { .feat-grid { grid-template-columns: 1fr; } }
+  .feat { background: var(--panel); border: 2px solid var(--line); border-radius: var(--r); padding: 22px; display: grid; grid-template-columns: 72px 1fr; gap: 16px; align-items: start; transition: transform .2s, border-color .2s; }
+  .feat:hover { transform: translateY(-3px); border-color: rgba(127, 208, 255, .6); }
+  .feat img { width: 72px; height: 72px; object-fit: contain; filter: drop-shadow(0 6px 8px rgba(0,0,0,.4)); }
+  .feat:hover img { animation: bob2 1s ease-in-out infinite; }
+  .feat b { font-family: var(--display); font-weight: normal; font-size: 22px; display: block; letter-spacing: .02em; line-height: 1.15; margin-bottom: 4px; }
+  .feat span { color: var(--muted); font-size: 15px; }
+
+  .gallery { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-top: 48px; }
+  @media (max-width: 700px) { .gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); } .gallery .pic:nth-child(n+7) { display: none; } }
+  .pic { position: relative; aspect-ratio: 1; border-radius: 16px; overflow: hidden; border: 3px solid var(--line); cursor: pointer; padding: 0; background: #2a1c14; }
+  .pic img { width: 100%; height: 100%; object-fit: cover; }
+  .pic .tiles { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(6, 1fr); }
+  .pic .tiles i { background: #4a3222; box-shadow: inset 2px 2px 0 #6a4a33, inset -2px -2px 0 #2e1e14; transition: transform .35s cubic-bezier(.5,-0.5,.6,1), opacity .35s; }
+  .pic.open .tiles i { transform: scale(0) rotate(40deg); opacity: 0; }
+  .gallery-note { text-align: center; color: var(--muted); margin-top: 16px; font-size: 15px; }
+
+  /* ---------- Posters ---------- */
+  .posters { background: linear-gradient(var(--night), #150f45); }
+  .poster-row { display: flex; gap: 18px; justify-content: center; align-items: flex-end; margin-top: 40px; flex-wrap: wrap; }
+  .poster { background: var(--panel); border: 2px solid var(--line); border-radius: 20px; padding: 10px 10px 14px; text-align: center; text-decoration: none; transition: transform .2s; }
+  .poster:hover { transform: translateY(-5px) rotate(-1deg); }
+  .poster img { border-radius: 12px; height: 260px; width: auto; margin-bottom: 10px; }
+  @media (max-width: 700px) { .poster img { height: 180px; } }
+  .poster b { font-family: var(--display); font-weight: normal; font-size: 18px; display: block; letter-spacing: .02em; }
+  .poster span { color: var(--muted); font-size: 13px; }
+  .share-row { display: flex; gap: 12px; justify-content: center; margin-top: 30px; flex-wrap: wrap; }
+  .toast { position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 140%); background: var(--panel-solid); border: 2px solid var(--gold);
+           border-radius: 16px; padding: 12px 22px; font-family: var(--display); letter-spacing: .02em; z-index: 60; transition: transform .3s ease, opacity .3s ease; opacity: 0; pointer-events: none; }
+  .toast.show { transform: translate(-50%, 0); opacity: 1; }
+
+  /* ---------- Final CTA ---------- */
+  .final { text-align: center; overflow: hidden; background: url(img/bg_wide.jpg) center 40% / cover no-repeat; padding-top: clamp(90px, 12vw, 160px); padding-bottom: clamp(90px, 12vw, 160px); }
+  .final::before { content: ""; position: absolute; inset: 0; background: linear-gradient(var(--night), rgba(11,10,46,.66) 30%, rgba(11,10,46,.66) 70%, var(--night)); }
+  .final .wrap { position: relative; display: flex; flex-direction: column; align-items: center; gap: 22px; }
+  .final img.logo { width: min(420px, 80vw); filter: drop-shadow(0 14px 24px rgba(10,6,40,.8)); }
+  footer { text-align: center; color: var(--muted); font-size: 14px; padding: 28px 16px 40px; }
+  footer a { color: var(--sky); }
+
+  .reveal { opacity: 0; transform: translateY(28px); transition: opacity .7s ease, transform .7s ease; }
+  .reveal.in { opacity: 1; transform: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; }
+    .reveal { opacity: 1; transform: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar" id="topbar">
+  <a href="#top" aria-label="Slice Quest, back to top"><img src="img/logo.webp" alt="Slice Quest"></a>
+  <nav><a href="#try">Try it</a><a href="#heroes">Heroes</a><a href="#features">Features</a><a href="#share">Share</a></nav>
+  <a class="btn btn-play btn-small" href="https://slice-quest.netlify.app/" target="_blank" rel="noopener">PLAY FREE</a>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="hero-bg" id="heroBg"></div>
+  <div class="hero-shade"></div>
+  <canvas id="sky"></canvas>
+  <div class="floaters" id="floaters" aria-hidden="true">
+    <img class="fl" data-depth="1.6" src="img/items/coin.webp" alt="" style="--s:74px; left:44%; top:14%; --d:4.6s">
+    <img class="fl hide-tall" data-depth="2.2" src="img/items/heart.webp" alt="" style="--s:62px; left:36%; top:34%; --d:5.4s; --dl:-1s">
+    <img class="fl" data-depth="1.2" src="img/items/shield.webp" alt="" style="--s:58px; left:6%; top:12%; --d:6s; --dl:-2s">
+    <img class="fl hide-tall" data-depth="2.6" src="img/items/mystery.webp" alt="" style="--s:70px; left:2%; top:80%; --d:5s; --dl:-3s">
+    <img class="fl" data-depth="1.9" src="img/items/bolt.webp" alt="" style="--s:66px; right:4%; top:84%; --d:4.2s; --dl:-.5s">
+    <img class="fl hide-tall" data-depth="1" src="img/items/sticker.webp" alt="" style="--s:48px; left:24%; top:8%; --d:5.8s; --dl:-4s">
+  </div>
+  <div class="free-badge">FREE<small>to play</small></div>
+  <div class="hero-content">
+    <img class="hero-logo" src="img/logo.webp" alt="Slice Quest" width="1000" height="603">
+    <div class="tagline">Reveal · Avoid · Survive · <b>Collect!</b></div>
+    <div class="hero-actions">
+      <a class="btn btn-play" href="https://slice-quest.netlify.app/" target="_blank" rel="noopener"><span class="shine"></span>PLAY NOW</a>
+      <a class="btn btn-ghost" href="#try">See how it works</a>
+      <div class="hero-sub"><span class="free-word">Free · </span>No download · Phone, tablet or computer</div>
+    </div>
+  </div>
+  <a class="scroll-hint" href="#try" aria-label="Scroll down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></a>
+</section>
+
+<div class="parade" aria-hidden="true"><div class="parade-track" id="parade"></div></div>
+
+<!-- MINI GAME -->
+<section class="play" id="try">
+  <div class="wrap play-grid">
+    <div class="game-card reveal">
+      <div class="hud">
+        <div class="pic-name" id="picName">Turtle Beach</div>
+        <div class="bar" aria-hidden="true"><i id="barFill"></i></div>
+        <div class="pct" id="pct">0%</div>
+      </div>
+      <div class="stage" id="stage">
+        <canvas id="game" aria-label="Animated demo: the hero slices the tiles to reveal a hidden picture"></canvas>
+        <div class="banner" id="banner"><small>Picture revealed</small><span id="bannerName">Turtle Beach</span></div>
+        <div class="steer" id="steer">Drag to steer</div>
+      </div>
+    </div>
+    <div class="play-copy reveal">
+      <div class="kicker">See how it works</div>
+      <h2>Cut the tiles.<br><em>Find the picture.</em></h2>
+      <p class="lead">Every level hides a picture under the tiles. Slice off pieces of the board while enemies try to break your line.</p>
+      <ul class="howto">
+        <li><img src="img/items/bolt.webp" alt=""><div><b>Slice</b><span>Run off the safe edge and cut a line across the tiles.</span></div></li>
+        <li><img src="img/items/shield.webp" alt=""><div><b>Close it off</b><span>Get back to safety. The side without enemies opens up.</span></div></li>
+        <li><img src="img/items/heart.webp" alt=""><div><b>Dodge</b><span>If an enemy touches your line, you lose a heart.</span></div></li>
+      </ul>
+      <p class="keys">Want a go? Drag on the board<span class="kb">, or use <kbd>←</kbd> <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd></span>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- HEROES -->
+<section class="heroes" id="heroes">
+  <div class="wrap">
+    <div class="center reveal">
+      <div class="kicker">10 heroes</div>
+      <h2>Pick your <em>hero</em></h2>
+      <p class="lead">Every hero has a weapon and a special move you can upgrade. Pick one and it stars in the demo above.</p>
+    </div>
+    <div class="roster reveal">
+      <div class="spotlight" id="spot">
+        <img class="big" id="spotImg" src="img/heroes/hero.webp" alt="">
+        <div>
+          <h3 id="spotName">Red Cap</h3>
+          <div class="special" id="spotSpecial">Whirlwind</div>
+          <p id="spotText">Spin and slash every enemy around you</p>
+          <div class="weapon">Weapon: <b id="spotWeapon">Crystal Sword</b></div>
+          <a class="btn btn-ghost try" href="#try" id="spotTry">See Red Cap in the demo</a>
+        </div>
+      </div>
+      <div class="cards" id="cards" role="group" aria-label="Heroes"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ENEMIES -->
+<section id="enemies">
+  <div class="wrap">
+    <div class="center reveal">
+      <div class="kicker">Watch out</div>
+      <h2>They <em>will</em> chase you</h2>
+      <p class="lead">Five kinds of enemies guard the island. Each one needs its own plan.</p>
+    </div>
+    <div class="foes reveal" id="foes"></div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="wrap">
+    <div class="center reveal">
+      <div class="kicker">So much to do</div>
+      <h2>An island full of <em>adventure</em></h2>
+    </div>
+    <div class="feat-grid reveal">
+      <div class="feat"><img src="img/items/coin.webp" alt=""><div><b>20 levels on Tropical Isle</b><span>Beaches, temples, volcanoes and lagoons, each with its own hidden picture.</span></div></div>
+      <div class="feat"><img src="img/items/bolt.webp" alt=""><div><b>Daily Challenge &amp; Endless</b><span>A new level every day, the same for everyone, with a leaderboard and streaks.</span></div></div>
+      <div class="feat"><img src="img/items/heart.webp" alt=""><div><b>Family &amp; Kids mode</b><span>Kids get their own player, slower enemies, more time and five hearts.</span></div></div>
+      <div class="feat"><img src="img/items/mystery.webp" alt=""><div><b>Shop full of fun</b><span>Colourful trails, pets that follow you, dances and emotes.</span></div></div>
+      <div class="feat"><img src="img/items/bomb.webp" alt=""><div><b>Power-ups</b><span>Bombs, shields, speed boots, freeze and the Surprise Box.</span></div></div>
+      <div class="feat"><img src="img/items/sticker.webp" alt=""><div><b>Album &amp; stickers</b><span>Keep every picture as an HD wallpaper, and find the sticker hidden in every level.</span></div></div>
+    </div>
+    <div class="gallery reveal" id="gallery"></div>
+    <p class="gallery-note">Tap a picture to peek. There are 20 to reveal in the game.</p>
+  </div>
+</section>
+
+<!-- POSTERS -->
+<section class="posters" id="share">
+  <div class="wrap center">
+    <div class="reveal">
+      <div class="kicker">Spread the word</div>
+      <h2>Share <em>Slice Quest</em></h2>
+      <p class="lead">Grab a poster for your story, feed or chat, or send the link to a friend.</p>
+    </div>
+    <div class="poster-row reveal">
+      <a class="poster" href="posters/slice-quest-story.jpg" download><img src="posters/slice-quest-story.jpg" alt="Slice Quest story poster" loading="lazy"><b>Story</b><span>1080 × 1920</span></a>
+      <a class="poster" href="posters/slice-quest-feed.jpg" download><img src="posters/slice-quest-feed.jpg" alt="Slice Quest feed poster" loading="lazy"><b>Feed</b><span>1080 × 1350</span></a>
+      <a class="poster" href="posters/slice-quest-wide.jpg" download><img src="posters/slice-quest-wide.jpg" alt="Slice Quest wide poster" loading="lazy"><b>Wide</b><span>1920 × 1080</span></a>
+    </div>
+    <div class="share-row">
+      <button class="btn btn-ghost" id="btnShare">Share this page</button>
+      <button class="btn btn-ghost" id="btnCopy">Copy game link</button>
+    </div>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap">
+    <img class="logo" src="img/logo.webp" alt="Slice Quest" loading="lazy">
+    <h2>Your quest is <em>waiting</em></h2>
+    <a class="btn btn-play" href="https://slice-quest.netlify.app/" target="_blank" rel="noopener"><span class="shine"></span>PLAY NOW</a>
+    <div class="hero-sub">Free · No download · Phone, tablet or computer</div>
+  </div>
+</section>
+
+<footer>
+  Slice Quest · <a href="https://slice-quest.netlify.app/" target="_blank" rel="noopener">slice-quest.netlify.app</a> · <a href="https://slice-quest.netlify.app/privacy.html" target="_blank" rel="noopener">Privacy</a>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  const GAME_URL = 'https://slice-quest.netlify.app/';
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $ = (s) => document.querySelector(s);
+
+  // ---------------- Data ----------------
+  const HEROES = [
+    { id: 'hero', name: 'Red Cap', special: 'Whirlwind', weapon: 'Crystal Sword', text: 'Spin and slash every enemy around you', color: '#5ab8ff' },
+    { id: 'sunny', name: 'Sunny', special: 'Sunburst', weapon: 'Sun Staff', text: 'A blinding flash stuns enemies nearby', color: '#ffd23f' },
+    { id: 'dino', name: 'Dino', special: 'Roar', weapon: 'Bone Club', text: 'A mighty roar stuns every enemy', color: '#7ad94a' },
+    { id: 'violet', name: 'Violet', special: 'Frost Spell', weapon: 'Magic Wand', text: 'Freeze all enemies for 5 seconds', color: '#b58aff' },
+    { id: 'bolt', name: 'Bolt-Bot', special: 'Laser Beam', weapon: 'Laser Blaster', text: 'A beam that destroys every enemy in line', color: '#ff5a4a' },
+    { id: 'scout', name: 'Scout', special: 'Power Arrow', weapon: 'Bow', text: 'A strong arrow hits the first enemy ahead', color: '#ffb03a' },
+    { id: 'explorer', name: 'Explorer', special: 'Quake', weapon: 'Pickaxe', text: 'Smash crates and metal around you, stun enemies', color: '#d8a060' },
+    { id: 'ninja', name: 'Ninja', special: 'Shadow Dash', weapon: 'Katana', text: 'Run fast and untouchable for 3 seconds', color: '#9aa4c8' },
+    { id: 'knight', name: 'Knight', special: 'Iron Guard', weapon: 'War Hammer', text: 'An unbreakable shield for 6 seconds', color: '#8ad0ff' },
+    { id: 'chef', name: 'Chef', special: 'Hearty Meal', weapon: 'Frying Pan', text: 'Eat up: +1 heart', color: '#ff6a8a' },
+  ];
+  const FOES = [
+    { id: 'chaser', name: 'Chaser', text: 'Hunts the front of your trail' },
+    { id: 'shooter', name: 'Shooter', text: 'Shows "!" then fires at you' },
+    { id: 'bomber', name: 'Bomber', text: 'Plants skull bombs. Keep your line out of the red ring!' },
+    { id: 'speedy', name: 'Speedy', text: 'Bounces around fast' },
+    { id: 'tank', name: 'Tank', text: 'Laser beam. Takes 3 bombs' },
+  ];
+  const PICS = [
+    { id: 'beach_1', name: 'Turtle Beach' }, { id: 'dolphins_1', name: 'Dolphin Sunset' }, { id: 'lighthouse_1', name: 'Lighthouse' },
+    { id: 'reef_1', name: 'Coral Reef' }, { id: 'lagoon_1', name: 'Pirate Lagoon' }, { id: 'temple_1', name: 'Jungle Temple' },
+    { id: 'tiki_2', name: 'Moonlit Huts' }, { id: 'treasure_1', name: 'Treasure Cove' }, { id: 'volcano_1', name: 'Volcano Isle' },
+    { id: 'waterfall_1', name: 'Parrot Falls' },
+  ];
+  const img = (src) => { const i = new Image(); i.src = src; return i; };
+
+  // ---------------- Top bar + reveal-on-scroll ----------------
+  const topbar = $('#topbar');
+  const onScroll = () => topbar.classList.toggle('show', scrollY > innerHeight * 0.7);
+  addEventListener('scroll', onScroll, { passive: true }); onScroll();
+  const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+
+  // ---------------- Hero parallax + starry sky ----------------
+  const heroBg = $('#heroBg');
+  const floaters = document.querySelectorAll('#floaters img');
+  if (!reduced) addEventListener('pointermove', (e) => {
+    if (scrollY > innerHeight) return;
+    const x = (e.clientX / innerWidth - 0.5) * -22, y = (e.clientY / innerHeight - 0.5) * -14;
+    heroBg.style.transform = `translate(${x}px, ${y}px) scale(1.02)`;
+    floaters.forEach((f) => { const k = +f.dataset.depth; f.style.transform = `translate(${-x * k}px, ${-y * k}px)`; });
+  });
+  const sky = $('#sky'), sctx = sky.getContext('2d');
+  let stars = [], embers = [];
+  const sizeSky = () => {
+    const d = Math.min(2, devicePixelRatio || 1);
+    sky.width = sky.clientWidth * d; sky.height = sky.clientHeight * d; sctx.setTransform(d, 0, 0, d, 0, 0);
+    const w = sky.clientWidth, h = sky.clientHeight;
+    stars = Array.from({ length: Math.round(w * h / 9000) }, () => ({ x: Math.random() * w, y: Math.random() * h * 0.5, r: Math.random() * 1.4 + 0.4, p: Math.random() * 6.28, s: Math.random() * 2 + 0.8 }));
+    embers = Array.from({ length: 26 }, () => newEmber(w, h, true));
+  };
+  const newEmber = (w, h, anywhere) => ({ x: Math.random() * w, y: anywhere ? h * (0.45 + Math.random() * 0.55) : h + 10, vy: -(12 + Math.random() * 26), vx: (Math.random() - 0.5) * 12, r: Math.random() * 2 + 1, life: 0, max: 4 + Math.random() * 5 });
+  let skyT = 0, lastSky = performance.now();
+  const drawSky = (now) => {
+    const dt = Math.min(0.05, (now - lastSky) / 1000); lastSky = now; skyT += dt;
+    const w = sky.clientWidth, h = sky.clientHeight;
+    if (scrollY < innerHeight) {
+      sctx.clearRect(0, 0, w, h);
+      for (const s of stars) {
+        const a = 0.35 + 0.65 * Math.abs(Math.sin(skyT * s.s + s.p));
+        sctx.fillStyle = `rgba(255,248,220,${a})`; sctx.fillRect(s.x, s.y, s.r, s.r);
+      }
+      for (let i = 0; i < embers.length; i++) {
+        const e = embers[i]; e.life += dt; e.x += (e.vx + Math.sin(skyT * 2 + i) * 8) * dt; e.y += e.vy * dt;
+        if (e.life > e.max) { embers[i] = newEmber(w, h, false); continue; }
+        const a = Math.sin(Math.PI * e.life / e.max);
+        sctx.fillStyle = `rgba(255,${170 + Math.round(60 * a)},80,${a * 0.9})`;
+        sctx.shadowColor = 'rgba(255,160,60,.9)'; sctx.shadowBlur = 8;
+        sctx.fillRect(e.x, e.y, e.r * 1.6, e.r * 1.6); sctx.shadowBlur = 0;
+      }
+    }
+    if (!reduced) requestAnimationFrame(drawSky);
+  };
+  sizeSky(); addEventListener('resize', sizeSky); requestAnimationFrame(drawSky);
+
+  // ---------------- Hero roster ----------------
+  let heroId = 'hero';
+  const heroImgs = Object.fromEntries(HEROES.map((h) => [h.id, img(`img/heroes/${h.id}.webp`)]));
+  const cards = $('#cards');
+  HEROES.forEach((h) => {
+    const b = document.createElement('button');
+    b.className = 'card'; b.setAttribute('aria-pressed', h.id === heroId); b.dataset.id = h.id;
+    b.innerHTML = `<img src="img/heroes/${h.id}.webp" alt="" loading="lazy"><span>${h.name}</span>`;
+    b.addEventListener('click', () => pickHero(h.id));
+    cards.append(b);
+  });
+  function pickHero(id) {
+    const h = HEROES.find((x) => x.id === id); heroId = id;
+    cards.querySelectorAll('.card').forEach((c) => c.setAttribute('aria-pressed', c.dataset.id === id));
+    const spot = $('#spot'); spot.style.setProperty('--hc', h.color);
+    const big = $('#spotImg'); big.src = `img/heroes/${id}.webp`; big.classList.remove('pop'); void big.offsetWidth; big.classList.add('pop');
+    $('#spotName').textContent = h.name; $('#spotSpecial').textContent = h.special; $('#spotText').textContent = h.text;
+    $('#spotWeapon').textContent = h.weapon; $('#spotTry').textContent = `See ${h.name} in the demo`;
+  }
+  pickHero('hero');
+
+  // ---------------- Enemies ----------------
+  $('#foes').innerHTML = FOES.map((f) => `<div class="foe"><img src="img/enemies/${f.id}.webp" alt="" loading="lazy"><b>${f.name}</b><span>${f.text}</span></div>`).join('');
+  const foeImgs = Object.fromEntries(FOES.map((f) => [f.id, img(`img/enemies/${f.id}.webp`)]));
+
+  // ---------------- Gallery (tap to peek) ----------------
+  const gal = $('#gallery');
+  PICS.forEach((p) => {
+    const b = document.createElement('button'); b.className = 'pic'; b.setAttribute('aria-label', `Peek at ${p.name}`);
+    b.innerHTML = `<img src="img/pics/${p.id}.webp" alt="${p.name}" loading="lazy"><div class="tiles">${Array.from({ length: 36 }, (_, i) => `<i style="transition-delay:${((i % 6) + Math.floor(i / 6)) * 22}ms"></i>`).join('')}</div>`;
+    b.addEventListener('click', () => b.classList.toggle('open'));
+    b.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') b.classList.add('open'); });
+    b.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') b.classList.remove('open'); });
+    gal.append(b);
+  });
+
+  // ---------------- Share ----------------
+  const toast = (msg) => { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('show'), 2200); };
+  const copy = async (text, msg) => { try { await navigator.clipboard.writeText(text); toast(msg); } catch { prompt('Copy this link:', text); } };
+  $('#btnCopy').addEventListener('click', () => copy(GAME_URL, 'Game link copied!'));
+  $('#btnShare').addEventListener('click', async () => {
+    const data = { title: 'Slice Quest', text: 'Slice the tiles, dodge the enemies, reveal the picture. Free to play!', url: location.href };
+    if (navigator.share) { try { await navigator.share(data); } catch {} } else copy(location.href, 'Page link copied!');
+  });
+
+  // ---------------- Hero parade ----------------
+  const paradeList = [...HEROES.map((h) => `<img src="img/heroes/${h.id}.webp" alt="">`), ...FOES.map((f) => `<img class="foe-mini" src="img/enemies/${f.id}.webp" alt="">`)];
+  for (let i = paradeList.length - 1; i > 0; i--) { const j = (i * 7) % (i + 1); [paradeList[i], paradeList[j]] = [paradeList[j], paradeList[i]]; }
+  $('#parade').innerHTML = paradeList.join('') + paradeList.join('');
+
+  // ---------------- 3D tilt on cards, features and posters ----------------
+  if (!reduced && matchMedia('(hover: hover)').matches) {
+    document.querySelectorAll('.card, .feat, .poster, .foe, .spotlight').forEach((el) => {
+      el.classList.add('tilt');
+      el.addEventListener('pointermove', (e) => {
+        const r = el.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
+        const k = el.classList.contains('spotlight') ? 6 : 12;
+        el.style.transform = `perspective(700px) rotateY(${x * k}deg) rotateX(${-y * k}deg) translateY(-4px)`;
+      });
+      el.addEventListener('pointerleave', () => { el.style.transform = ''; });
+    });
+  }
+
+  // ---------------- Spotlight cycles through heroes until someone picks one ----------------
+  let userPicked = false;
+  cards.addEventListener('click', () => { userPicked = true; }, true);
+  const spotIO = new IntersectionObserver(([e]) => { spotIO.visible = e.isIntersecting; }, { threshold: 0.3 });
+  spotIO.observe($('#spot'));
+  setInterval(() => {
+    if (userPicked || !spotIO.visible || reduced) return;
+    const i = HEROES.findIndex((h) => h.id === heroId);
+    pickHero(HEROES[(i + 1) % HEROES.length].id);
+  }, 3200);
+
+  // =====================================================================
+  //  Animated demo of the real game. The hero slices across the tiles on
+  //  autopilot: every region it closes off with no enemy inside is revealed.
+  //  Dragging on the board (or arrow keys) lets a visitor steer for a while.
+  // =====================================================================
+  const N = 26, GOAL = 0.8, STEP_MS = 70, MANUAL_MS = 4000;
+  const canvas = $('#game'), ctx = canvas.getContext('2d'), stage = $('#stage');
+  let px = 0, cs = 0;
+  let grid, revealAt, trail, player, enemies, safeCell, lastStep = 0, invuln = 0, target = null, keyDir = null, particles = [], total, done = 0;
+  let phase = 'play', phaseUntil = 0, picIdx = 0, pic, manualUntil = 0, plan = null, pauseUntil = 0, visible = false;
+  const idx = (x, y) => y * N + x;
+  const inside = (x, y) => x >= 0 && y >= 0 && x < N && y < N;
+  const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+  const picImgs = PICS.map((p) => img(`img/pics/${p.id}.webp`));
+
+  let tileCv = null;
+  function buildTile() {
+    tileCv = document.createElement('canvas'); const s = Math.ceil(cs) + 1; tileCv.width = tileCv.height = s;
+    const t = tileCv.getContext('2d'); const g = t.createLinearGradient(0, 0, s, s);
+    g.addColorStop(0, '#5a3d29'); g.addColorStop(1, '#3e2819'); t.fillStyle = g; t.fillRect(0, 0, s, s);
+    const b = Math.max(1, s * 0.09);
+    t.fillStyle = 'rgba(255,220,170,.16)'; t.fillRect(0, 0, s, b); t.fillRect(0, 0, b, s);
+    t.fillStyle = 'rgba(0,0,0,.32)'; t.fillRect(0, s - b, s, b); t.fillRect(s - b, 0, b, s);
+  }
+  function resize() {
+    const r = stage.getBoundingClientRect(), d = Math.min(2, devicePixelRatio || 1);
+    px = Math.round(r.width * d); canvas.width = canvas.height = px; cs = px / N; buildTile();
+  }
+  new ResizeObserver(resize).observe(stage);
+  new IntersectionObserver(([e]) => { visible = e.isIntersecting; }, { threshold: 0.05 }).observe(stage);
+
+  function newRound() {
+    grid = new Uint8Array(N * N); revealAt = new Float32Array(N * N).fill(-1);
+    for (let i = 0; i < N; i++) { grid[idx(i, 0)] = grid[idx(i, N - 1)] = grid[idx(0, i)] = grid[idx(N - 1, i)] = 1; }
+    total = (N - 2) * (N - 2); done = 0; trail = []; plan = null;
+    player = { x: Math.floor(N / 2), y: N - 1, rx: Math.floor(N / 2), ry: N - 1, face: 1 }; safeCell = { x: player.x, y: player.y };
+    const kinds = ['chaser', 'speedy', 'bomber', 'shooter', 'tank'];
+    enemies = [0, 1].map((i) => {
+      const a = Math.PI / 4 + i * Math.PI / 2 + (Math.random() - 0.5) * 0.4, sp = 5.5 + Math.random() * 1.5;
+      return { x: N * (0.3 + 0.4 * Math.random()), y: N * (0.25 + 0.3 * Math.random()), vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, kind: kinds[(picIdx + i * 2) % kinds.length], t: Math.random() * 6 };
+    });
+    pic = picImgs[picIdx % picImgs.length];
+    $('#picName').textContent = PICS[picIdx % PICS.length].name;
+    particles = []; phase = 'play'; updatePct();
+  }
+  function updatePct() {
+    const p = Math.min(1, done / total);
+    $('#barFill').style.width = `${Math.min(100, p / GOAL * 100)}%`;
+    $('#pct').textContent = `${Math.round(p * 100)}%`;
+  }
+
+  function capture(now) {
+    for (const c of trail) { grid[idx(c.x, c.y)] = 1; revealAt[idx(c.x, c.y)] = now; done++; }
+    trail = [];
+    const seen = new Uint8Array(N * N), stack = [];
+    for (const e of enemies) { const i = idx(Math.floor(e.x), Math.floor(e.y)); if (grid[i] === 0 && !seen[i]) { seen[i] = 1; stack.push(i); } }
+    while (stack.length) {
+      const i = stack.pop(), x = i % N, y = (i / N) | 0;
+      for (const [dx, dy] of DIRS) { const nx = x + dx, ny = y + dy; if (!inside(nx, ny)) continue; const j = idx(nx, ny); if (!seen[j] && grid[j] === 0) { seen[j] = 1; stack.push(j); } }
+    }
+    for (let i = 0; i < N * N; i++) if (grid[i] === 0 && !seen[i]) {
+      grid[i] = 1; const x = i % N, y = (i / N) | 0, d = Math.hypot(x - player.x, y - player.y) * 20;
+      revealAt[i] = now + d; done++;
+      if (Math.random() < 0.2) burst(x + 0.5, y + 0.5, 2, now + d);
+    }
+    updatePct(); pauseUntil = now + 350;
+    if (done / total >= GOAL) finish(now);
+  }
+  function burst(x, y, n, at) {
+    for (let k = 0; k < n; k++) particles.push({ x, y, vx: (Math.random() - 0.5) * 8, vy: -Math.random() * 7 - 2, at, life: 0.7 + Math.random() * 0.4, c: Math.random() < 0.5 ? '#ffd23f' : '#fff3b0' });
+  }
+  function hit(now) {
+    if (now < invuln) return;
+    invuln = now + 1200;
+    for (const c of trail) grid[idx(c.x, c.y)] = 0;
+    trail = []; plan = null; player.x = safeCell.x; player.y = safeCell.y; target = null; pauseUntil = now + 500;
+    stage.classList.remove('shake'); void stage.offsetWidth; stage.classList.add('shake');
+  }
+  function finish(now) {
+    phase = 'done'; phaseUntil = now + 3400;
+    for (let i = 0; i < N * N; i++) if (grid[i] !== 1) { grid[i] = 1; const x = i % N, y = (i / N) | 0; revealAt[i] = now + 150 + (x + y) * 12; }
+    done = total; updatePct();
+    for (let k = 0; k < 80; k++) particles.push({ x: Math.random() * N, y: N * 0.25 * Math.random(), vx: (Math.random() - 0.5) * 10, vy: -Math.random() * 6, at: now + 400 + Math.random() * 700, life: 1.8, c: ['#ffd23f', '#7fd0ff', '#ff6a8a', '#8ef04c', '#fff'][k % 5], conf: true });
+    $('#bannerName').textContent = PICS[picIdx % PICS.length].name;
+    setTimeout(() => $('#banner').classList.add('show'), 700);
+    setTimeout(() => $('#banner').classList.remove('show'), 2900);
+  }
+
+  // Autopilot: from the safe edge, run straight in for a few cells, turn, and cut
+  // across until safe ground again. Walks along the safe edge to find a new start.
+  function autoDir() {
+    const onSafe = grid[idx(player.x, player.y)] === 1 && !trail.length;
+    if (onSafe) {
+      const into = DIRS.filter(([dx, dy]) => inside(player.x + dx, player.y + dy) && grid[idx(player.x + dx, player.y + dy)] === 0);
+      if (into.length && Math.random() < 0.55) {
+        const d = into[(Math.random() * into.length) | 0];
+        plan = { dir: d, run: 3 + ((Math.random() * 7) | 0), turned: false };
+        return d;
+      }
+      // Walk along safe ground (BFS) toward a random edge cell that touches hidden tiles.
+      if (!plan || !plan.walk || !plan.walk.length) {
+        const prev = new Int32Array(N * N).fill(-1), start = idx(player.x, player.y), q = [start]; prev[start] = start; const goals = [];
+        while (q.length) {
+          const i = q.shift(), x = i % N, y = (i / N) | 0;
+          if (i !== start && DIRS.some(([dx, dy]) => inside(x + dx, y + dy) && grid[idx(x + dx, y + dy)] === 0)) goals.push(i);
+          for (const [dx, dy] of DIRS) { const nx = x + dx, ny = y + dy; if (!inside(nx, ny)) continue; const j = idx(nx, ny); if (prev[j] < 0 && grid[j] === 1) { prev[j] = i; q.push(j); } }
+        }
+        if (!goals.length) return null;
+        let g = goals[Math.min(goals.length - 1, 4 + ((Math.random() * Math.min(goals.length, 30)) | 0))];
+        const path = []; while (g !== start) { path.push(g); g = prev[g]; }
+        plan = { walk: path.reverse().slice(0, 18) };
+      }
+      const n = plan.walk.shift(); return [n % N - player.x, ((n / N) | 0) - player.y];
+    }
+    if (!plan || plan.walk) plan = { dir: [0, -1], run: 0, turned: true };
+    const free = ([dx, dy]) => inside(player.x + dx, player.y + dy) && grid[idx(player.x + dx, player.y + dy)] !== 2;
+    if (!plan.turned && plan.run > 0 && free(plan.dir)) { plan.run--; return plan.dir; }
+    if (!plan.turned) {
+      plan.turned = true;
+      const perp = plan.dir[0] ? [[0, 1], [0, -1]] : [[1, 0], [-1, 0]];
+      const dist = (d) => { let x = player.x, y = player.y, n = 0; while (inside(x + d[0], y + d[1]) && grid[idx(x + d[0], y + d[1])] === 0) { x += d[0]; y += d[1]; n++; } return n; };
+      perp.sort((a, b) => dist(a) - dist(b));
+      plan.dir = Math.random() < 0.7 ? perp[0] : perp[1];
+    }
+    if (free(plan.dir)) return plan.dir;
+    return DIRS.find(free) || null;
+  }
+
+  function stepPlayer(now) {
+    let d = null;
+    if (now < manualUntil) {
+      if (keyDir) d = keyDir;
+      else if (target) {
+        const tx = Math.max(0, Math.min(N - 1, target.x)) - player.x, ty = Math.max(0, Math.min(N - 1, target.y)) - player.y;
+        if (tx || ty) d = Math.abs(tx) >= Math.abs(ty) ? [Math.sign(tx), 0] : [0, Math.sign(ty)];
+      }
+    } else if (now >= pauseUntil) d = autoDir();
+    if (!d) return;
+    const nx = player.x + d[0], ny = player.y + d[1];
+    if (!inside(nx, ny)) return;
+    const s = grid[idx(nx, ny)]; if (s === 2) return;
+    if (d[0]) player.face = d[0];
+    player.x = nx; player.y = ny;
+    if (s === 0) { grid[idx(nx, ny)] = 2; trail.push({ x: nx, y: ny }); }
+    else { if (trail.length) capture(now); safeCell = { x: nx, y: ny }; }
+  }
+  function stepEnemies(dt, now) {
+    const solid = (x, y) => { const cx = Math.floor(x), cy = Math.floor(y); return !inside(cx, cy) || grid[idx(cx, cy)] === 1; };
+    for (const e of enemies) {
+      e.t += dt; if (phase !== 'play') continue;
+      let nx = e.x + e.vx * dt; if (solid(nx + Math.sign(e.vx) * 0.45, e.y)) { e.vx = -e.vx; nx = e.x; }
+      let ny = e.y + e.vy * dt; if (solid(nx, ny + Math.sign(e.vy) * 0.45)) { e.vy = -e.vy; ny = e.y; }
+      if (solid(nx, ny)) { nx = e.x; ny = e.y; }
+      e.x = nx; e.y = ny;
+      if (grid[idx(Math.floor(e.x), Math.floor(e.y))] === 2 || (trail.length && Math.hypot(e.x - player.x - 0.5, e.y - player.y - 0.5) < 0.9)) hit(now);
+    }
+  }
+
+  // Visitor input: drag on the board or arrow keys take over for a few seconds.
+  const steer = $('#steer');
+  const takeOver = (now) => { manualUntil = now + MANUAL_MS; plan = null; steer.textContent = 'You are steering'; steer.classList.add('you'); };
+  const cellAt = (e) => { const r = canvas.getBoundingClientRect(); return { x: Math.floor((e.clientX - r.left) / r.width * N), y: Math.floor((e.clientY - r.top) / r.height * N) }; };
+  let dragging = false;
+  canvas.addEventListener('pointerdown', (e) => { dragging = true; canvas.setPointerCapture(e.pointerId); target = cellAt(e); takeOver(performance.now()); e.preventDefault(); });
+  canvas.addEventListener('pointermove', (e) => { if (dragging) { target = cellAt(e); takeOver(performance.now()); } });
+  canvas.addEventListener('pointerup', () => { dragging = false; });
+  canvas.addEventListener('pointercancel', () => { dragging = false; });
+  const KEYS = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+  const inView = () => { const r = stage.getBoundingClientRect(); return r.top > -r.height / 2 && r.bottom < innerHeight + r.height / 2; };
+  addEventListener('keydown', (e) => { if (KEYS[e.key] && inView()) { keyDir = KEYS[e.key]; target = null; takeOver(performance.now()); e.preventDefault(); } });
+  addEventListener('keyup', (e) => { if (KEYS[e.key] && keyDir === KEYS[e.key]) keyDir = null; });
+
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (visible && px) {
+      if (phase === 'play') { while (now - lastStep >= STEP_MS) { stepPlayer(now); lastStep += STEP_MS; if (phase !== 'play') break; } }
+      else { lastStep = now; if (now > phaseUntil) { picIdx++; newRound(); lastStep = now; } }
+      if (keyDir && now < manualUntil) manualUntil = now + MANUAL_MS;
+      if (now > manualUntil && steer.classList.contains('you')) { steer.textContent = 'Drag to steer'; steer.classList.remove('you'); }
+      stepEnemies(dt, now);
+      const k = Math.min(1, dt * 16); player.rx += (player.x - player.rx) * k; player.ry += (player.y - player.ry) * k;
+      draw(now, dt);
+    } else lastStep = now;
+    requestAnimationFrame(frame);
+  }
+
+  function draw(now, dt) {
+    ctx.clearRect(0, 0, px, px);
+    if (pic.complete) ctx.drawImage(pic, 0, 0, px, px);
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+      const i = idx(x, y);
+      if (grid[i] === 1) {
+        const t0 = revealAt[i]; if (t0 < 0) continue;
+        const p = (now - t0) / 280; if (p >= 1) continue;
+        const k = p < 0 ? 1 : 1 - p * p, w = cs * k;
+        ctx.globalAlpha = p < 0 ? 1 : 1 - p * 0.5;
+        ctx.drawImage(tileCv, x * cs + (cs - w) / 2, y * cs + (cs - w) / 2 - (p > 0 ? p * cs * 0.6 : 0), w, w); ctx.globalAlpha = 1;
+        continue;
+      }
+      ctx.drawImage(tileCv, x * cs, y * cs, cs + 0.5, cs + 0.5);
+    }
+    if (trail.length) {
+      ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      const pts = [safeCell, ...trail, { x: player.rx, y: player.ry }];
+      for (const [w, c, b] of [[cs * 0.62, 'rgba(90,184,255,.35)', cs * 0.8], [cs * 0.34, '#bff0ff', cs * 0.4]]) {
+        ctx.beginPath(); ctx.strokeStyle = c; ctx.lineWidth = w; ctx.shadowColor = '#5ab8ff'; ctx.shadowBlur = b;
+        pts.forEach((p, j) => { const X = (p.x + 0.5) * cs, Y = (p.y + 0.5) * cs; j ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); });
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+    for (const e of enemies) {
+      const im = foeImgs[e.kind]; if (!im.complete || phase !== 'play') continue;
+      const s = cs * 2.6, bob = Math.abs(Math.sin(e.t * 8)) * cs * 0.25, ar = im.naturalWidth / im.naturalHeight;
+      ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(e.x * cs, e.y * cs + s * 0.42, s * 0.3, s * 0.1, 0, 0, 6.28); ctx.fill();
+      ctx.save(); ctx.translate(e.x * cs, e.y * cs); if (e.vx < 0) ctx.scale(-1, 1);
+      ctx.drawImage(im, -s * ar / 2, -s * 0.55 - bob, s * ar, s); ctx.restore();
+    }
+    const him = heroImgs[heroId];
+    if (him.complete) {
+      const s = cs * 3.2, X = (player.rx + 0.5) * cs, Y = (player.ry + 0.5) * cs;
+      const moving = Math.hypot(player.x - player.rx, player.y - player.ry) > 0.05;
+      const hop = moving ? Math.abs(Math.sin(now / 70)) * cs * 0.3 : Math.sin(now / 400) * cs * 0.08;
+      ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(X, Y + cs * 0.35, cs * 0.75, cs * 0.26, 0, 0, 6.28); ctx.fill();
+      ctx.save(); ctx.beginPath(); ctx.arc(X, Y, cs * 0.5, 0, 6.28); ctx.fillStyle = '#fff'; ctx.shadowColor = '#5ab8ff'; ctx.shadowBlur = cs; ctx.fill(); ctx.restore();
+      if (!(now < invuln && Math.floor(now / 90) % 2)) {
+        ctx.save(); ctx.translate(X, Y - hop); if (player.face < 0) ctx.scale(-1, 1);
+        ctx.drawImage(him, -s / 2, -s * 0.86, s, s); ctx.restore();
+      }
+    }
+    particles = particles.filter((p) => {
+      if (now < p.at) return true;
+      const t = (now - p.at) / 1000; if (t > p.life) return false;
+      p.x += p.vx * dt; p.y += p.vy * dt; p.vy += (p.conf ? 9 : 14) * dt;
+      ctx.globalAlpha = 1 - t / p.life; ctx.fillStyle = p.c;
+      const r = cs * (p.conf ? 0.32 : 0.24); ctx.fillRect(p.x * cs - r / 2, p.y * cs - r / 2, r, r); ctx.globalAlpha = 1;
+      return true;
+    });
+  }
+
+  newRound();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
